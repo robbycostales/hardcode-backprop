@@ -1,0 +1,1 @@
+Run the file "hard-coded_xor.py" for backpropagation demonstrated on training a net for xor

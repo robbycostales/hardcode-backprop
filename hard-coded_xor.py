@@ -1,10 +1,12 @@
 import random
 import math
+import copy
 
 # _-_-_-_-_-_-_-_-_-_-_-_ SETTINGS _-_-_-_-_-_-_-_-_-_-_-_ #
 
-NUM_ITER = 100000  # number of times to train through set
-GAMMA = .8  # learning rate
+NUM_ITER = 10000  # number of times to train through set
+GAMMA = 1  # learning rate
+FREQ = 20    # frequency of printing values
 
 # _-_-_-_-_-_-_-_-_-_-_-_ WEIGHTS _-_-_-_-_-_-_-_-_-_-_-_ #
 
@@ -51,15 +53,24 @@ xor_set = [[0, 0, 0],
 
 for i in range(NUM_ITER):
     local_errors = []
-    if i % 2000 == 0:
-        print(weights)
-
-    for j in xor_set:
+    if i % FREQ == 0:
+        prev_weights = copy.deepcopy(weights)
         weights = [[w_p0, w_p1, w_p2, w_p3, w_p4], [w_a0, w_a1, w_a2], [w_b0, w_b1, w_b2], [w_c0, w_c1, w_c2],
                    [w_d0, w_d1, w_d2]]
-        x1 = j[0]
-        x2 = j[1]
-        target = j[2]
+
+        print("{:<8.3f}{:<8.3f}{:<8.3f}{:<8.3f}{:<8.3f}{:<8.3f}{:<8.3f}{:<8.3f}{:<8.3f}{:<8.3f}{:<8.3f}{:<8.3f}"
+              "{:<8.3f}{:<8.3f}{:<8.3f}{:<8.3f}{:<8.3f}   ".format(*weights[0], *weights[1], *weights[2], *weights[3], *weights[4]), end="")
+        del_weights = copy.deepcopy(weights)
+        for i in range(len(weights)):
+            for j in range(len(weights[i])):
+                del_weights[i][j] = weights[i][j] - prev_weights[i][j]
+        print("{:<8.3f}{:<8.3f}{:<8.3f}{:<8.3f}{:<8.3f}{:<8.3f}{:<8.3f}{:<8.3f}{:<8.3f}{:<8.3f}{:<8.3f}{:<8.3f}"
+              "{:<8.3f}{:<8.3f}{:<8.3f}{:<8.3f}{:<8.3f}  ".format(*del_weights[0], *del_weights[1], *del_weights[2], *del_weights[3],
+                                                                  *del_weights[4]))
+    for j in xor_set:
+        x1 = j[0]       # first input
+        x2 = j[1]       # second inputs
+        target = j[2]   # expected output (target)
 
         # FEED FORWARD
 
@@ -84,59 +95,64 @@ for i in range(NUM_ITER):
         error = (0.5 * (target - out_p) ** 2)
         local_errors.append(error)
 
+
         # DELTA RULE (for output weights)
         # output weights
-        del_w_p1 = (target - out_p) * out_p * (1 - out_p) * out_a
+        del_w_p1 = (out_p - target) * out_p * (1 - out_p) * out_a
         w_p1 -= (GAMMA * del_w_p1)
 
-        del_w_p2 = (target - out_p) * out_p * (1 - out_p) * out_b
+        del_w_p2 = (out_p - target) * out_p * (1 - out_p) * out_b
         w_p2 -= (GAMMA * del_w_p2)
 
-        del_w_p3 = (target - out_p) * out_p * (1 - out_p) * out_c
+        del_w_p3 = (out_p - target) * out_p * (1 - out_p) * out_c
         w_p3 -= (GAMMA * del_w_p3)
 
-        del_w_p4 = (target - out_p) * out_p * (1 - out_p) * out_d
+        del_w_p4 = (out_p - target) * out_p * (1 - out_p) * out_d
         w_p4 -= (GAMMA * del_w_p4)
 
-        w_p0 -= (GAMMA * (0 - (target - out_p) * out_p * (1 - out_p) * 1))
+        w_p0 -= (GAMMA * ((out_p - target) * out_p * (1 - out_p) * 1))
 
         # HIDDEN LAYER UPDATES
         # a weights
-        del_w_a1 = ((out_p - target) * out_a * (1 - out_a) * x1)
+        del_w_a0 = ((out_p - target) * out_p*(1 - out_p)*w_p1 * out_a*(1 - out_a) * 1)
+        w_a0 -= (GAMMA * del_w_a0)
+
+        del_w_a1 = ((out_p - target) * out_p*(1 - out_p)*w_p1 * out_a*(1 - out_a) * x1)
         w_a1 -= (GAMMA * del_w_a1)
 
-        del_w_a2 = ((out_p - target) * out_a * (1 - out_a) * x2)
+        del_w_a2 = ((out_p - target) * out_p*(1 - out_p)*w_p1 * out_a*(1 - out_a) * x2)
         w_a2 -= (GAMMA * del_w_a2)
 
         # b weights
-        del_w_b1 = ((out_p - target) * out_b * (1 - out_b) * x1)
+        del_w_b0 = ((out_p - target) * out_p * (1 - out_p) * w_p2 * out_b * (1 - out_b) * 1)
+        w_b0 -= (GAMMA * del_w_b0)
+
+        del_w_b1 = ((out_p - target) * out_p * (1 - out_p) * w_p2 * out_b * (1 - out_b) * x1)
         w_b1 -= (GAMMA * del_w_b1)
 
-        del_w_b2 = ((out_p - target) * out_b * (1 - out_b) * x2)
+        del_w_b2 = ((out_p - target) * out_p * (1 - out_p) * w_p2 * out_b * (1 - out_b) * x2)
         w_b2 -= (GAMMA * del_w_b2)
 
         # c weights
-        del_w_c1 = ((out_p - target) * out_c * (1 - out_c) * x1)
+        del_w_c0 = ((out_p - target) * out_p * (1 - out_p) * w_p3 * out_c * (1 - out_c) * 1)
+        w_c0 -= (GAMMA * del_w_c0)
+
+        del_w_c1 = ((out_p - target) * out_p * (1 - out_p) * w_p3 * out_c * (1 - out_c) * x1)
         w_c1 -= (GAMMA * del_w_c1)
 
-        del_w_c2 = ((out_p - target) * out_c * (1 - out_c) * x2)
+        del_w_c2 = ((out_p - target) * out_p * (1 - out_p) * w_p3 * out_c * (1 - out_c) * x2)
         w_c2 -= (GAMMA * del_w_c2)
 
         # d weights
-        del_w_d1 = ((out_p - target) * out_d * (1 - out_d) * x1)
+        del_w_d0 = ((out_p - target) * out_p * (1 - out_p) * w_p4 * out_d * (1 - out_d) * 1)
+        w_d0 -= (GAMMA * del_w_d0)
+
+        del_w_d1 = ((out_p - target) * out_p * (1 - out_p) * w_p4 * out_d * (1 - out_d) * x1)
         w_d1 -= (GAMMA * del_w_d1)
 
-        del_w_d2 = ((out_p - target) * out_d * (1 - out_d) * x2)
+        del_w_d2 = ((out_p - target) * out_p * (1 - out_p) * w_p4 * out_d * (1 - out_d) * x2)
         w_d2 -= (GAMMA * del_w_d2)
 
-        w_a0 -= (GAMMA * ((out_p - target) * out_a * (1 - out_a) * 1))
-        w_b0 -= (GAMMA * ((out_p - target) * out_b * (1 - out_b) * 1))
-        w_c0 -= (GAMMA * ((out_p - target) * out_c * (1 - out_c) * 1))
-        w_d0 -= (GAMMA * ((out_p - target) * out_d * (1 - out_d) * 1))
-
-    #if len(local_errors) > 0:
-        #avg = sum(local_errors)/4
-        #print("{0:5}{1:10}".format(i, round(avg, 8)))
 
 # TESTING
 print("\nTESTING\n")
