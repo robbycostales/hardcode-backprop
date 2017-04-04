@@ -1,3 +1,10 @@
+# Author: Robert Costales
+# Language: Python 3
+# Date: 4/3/2017
+# Summary: This program is a hard-coded MLP with one hidden layer
+#		   The weights are trained on XOR
+
+
 import random
 import math
 import copy
