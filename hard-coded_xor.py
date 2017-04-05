@@ -18,7 +18,7 @@ FREQ = 20    # frequency of printing values
 # _-_-_-_-_-_-_-_-_-_-_-_ WEIGHTS _-_-_-_-_-_-_-_-_-_-_-_ #
 
 # x1, x2 are inputs
-# a, b, are hidden layer nodes
+# a, b, c, d are hidden layer nodes
 # p is output
 
 # weights for a
